@@ -1,0 +1,15 @@
+import type { Execution } from '../../algorithm/solver';
+import { compareStrategies } from './resultModel';
+export function StrategyComparison({ execution }: { execution: Execution }) {
+  const comparison = compareStrategies(execution);
+  const rows = [{ label: 'Branch and Bound', kit: execution.result, className: 'bnb-bar' }, { label: 'Ratio-greedy', kit: execution.greedy, className: 'greedy-bar' }];
+  return <section className="strategy-comparison" aria-labelledby="comparison-heading"><h3 id="comparison-heading">Two strategies, one carrying limit</h3><p className="muted">Greedy sorts by priority per kilogram, takes each whole supply if it fits, and continues past supplies that do not fit. Equal ratios keep inventory order. It is a shortcut, not an optimality guarantee.</p>
+    <div className="comparison-chart" role="img" aria-label={`Priority comparison: Branch and Bound ${execution.result.priority}; ratio-greedy ${execution.greedy.priority}.`}>
+      {rows.map(row => <div className="chart-row" key={row.label}><span>{row.label}</span><div className="bar-track"><div className={row.className} style={{ width: `${row.kit.priority / comparison.maxPriority * 100}%` }}/></div><strong>{row.kit.priority}</strong></div>)}
+    </div>
+    <div className="table-scroll"><table className="result-table"><caption>Actual priority and weight for each feasible kit</caption><thead><tr><th scope="col">Strategy</th><th scope="col">Priority</th><th scope="col">Weight</th><th scope="col">Selected</th></tr></thead><tbody>{rows.map(row => <tr key={row.label}><th scope="row">{row.label}</th><td>{row.kit.priority}</td><td>{row.kit.weight} kg</td><td>{row.kit.selectedIds.length}</td></tr>)}</tbody></table></div>
+    <p className="comparison-outcome">{comparison.equal ? `No priority difference: 0 points${comparison.percentage === null ? '' : ' (0.0%)'}. ${execution.optimal ? 'Greedy matches the proven optimum for this instance.' : 'Both kits have the same priority. An incomplete search does not prove either is optimal.'}` : comparison.difference > 0 ? `${execution.optimal ? 'Proven improvement' : 'Best-known advantage'}: +${comparison.difference} priority points${comparison.percentage === null ? '' : ` (${comparison.percentage.toFixed(1)}% above greedy)`}.` : `The search’s best-known kit is ${Math.abs(comparison.difference)} priority points below greedy${comparison.percentage === null ? '' : ` (${Math.abs(comparison.percentage).toFixed(1)}% lower)`}. A stopped search can lag behind the shortcut; optimality is not proven.`}</p>
+    {comparison.percentage === null && <p className="trace-note">Percentage change is undefined because greedy’s priority is zero. Compare the absolute points instead.</p>}
+    <details><summary>Why can these outcomes differ?</summary><p>Choosing the most priority per kilogram first can use capacity needed for a better combination. Branch and Bound explores include/exclude alternatives and uses valid bounds to rule out unpromising branches. Only a completed search guarantees the highest priority; weight and chosen supplies may differ even when priority is equal.</p></details>
+  </section>;
+}
