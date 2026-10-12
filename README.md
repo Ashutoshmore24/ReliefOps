@@ -1,75 +1,369 @@
-# ReliefOps
+# 🛡️ ReliefOps — Smart Disaster Relief Kit Optimizer
 
-Client-side educational 0/1 knapsack application. Phases 1–5 are implemented: project foundation, verified solver, worker execution, mission editor, results dashboard, interactive algorithm explorer and beginner learning mode.
+### Limited Capacity. Maximum Impact.
 
-## Run
+**ReliefOps** is an interactive, web-based educational platform that demonstrates how the **Branch and Bound algorithm** solves the 0/1 Knapsack Problem to assemble high-impact disaster relief kits under limited carrying capacity.
 
-`npm install`, then `npm run dev`. Verification: `npm test`, `npm run lint`, `npm run build`.
+Instead of treating algorithm analysis as static theory, ReliefOps turns optimization into an interactive experience. Users can build disaster-response scenarios, visualize supplies being packed into a virtual emergency kit, explore branching and pruning decisions, compare greedy and optimal solutions, and learn the algorithm through a guided learning journey.
 
-## Solver contract
+Built with React, TypeScript, and modern frontend technologies, ReliefOps combines algorithmic correctness with visual simulation and beginner-friendly explanations.
 
-`solve(mission, options)` validates input and returns a single execution containing the best feasible kit, a ratio-greedy baseline, statistics and an ordered trace. Only status `optimal` proves optimality. It does not mutate mission inputs. Duplicate names are supported; IDs must be unique. Weights and capacity allow two decimal places and are converted to integer hundredths. Priority is a nonnegative integer. See `src/domain/mission.ts` for bounds and presets.
+- Live Demo : https://relief-ops-six.vercel.app/
 
-Best-bound-first selection uses exact rational comparisons with BigInt; equal bounds use node creation order. Supplies are sorted by exact descending value/weight ratio, then input order. Include children precede exclude children. Equal-value incumbent candidates retain the first encountered solution. Fractional relaxation provides an admissible bound; over-capacity branches and bounds no better than the incumbent are pruned. Display bounds are approximate numbers, but pruning never uses them. An overweight node's bound is its current priority for display and is never used as a feasible relaxation bound.
+---
 
-Trace events contain immutable snapshots of node weight, priority, display bound, incumbent, decision, selected IDs and prune reason. Node creation, activation, incumbent improvement, pruning and completion are all real solver events. Pruned count includes resolved terminal nodes. Explored count is the number of frontier removals. Created count includes the root.
+## ✨ Key Features
 
-## Verification and next phases
+- **🎒 Live Relief Kit Simulation** — Watch supplies get packed into a virtual emergency kit with live weight, capacity, and priority updates.
+- **🌳 Branch and Bound Explorer** — Visualize the search tree, branching decisions, upper bounds, and pruning.
+- **⚖️ Greedy vs. Optimal Comparison** — Compare selected supplies, total weight, and priority scores to understand why greedy selection can fail.
+- **🧭 Interactive Learning Journey** — Learn Branch and Bound through nine beginner-friendly lessons connected to the algorithm explorer.
+- **🎤 Presentation Mode** — Demonstrate the algorithm using guided topics, execution traces, and playback controls.
+- **🎨 Light and Dark Themes** — Switch between elegant light and dark modes with saved preferences.
+- **🧰 Mission Editor** — Create and customize scenarios by adding supplies and adjusting their weights, priority values, and carrying capacity.
 
-Tests compare against exhaustive enumeration on 500 seeded instances, cover edge cases, verify admissible bounds over partial states, and check trace consistency and determinism.
+---
 
-`execute(mission, options)` is the generator behind the synchronous compatibility wrapper and the Web Worker. It retains the verified search logic and yields progress every 32 inspected nodes in the worker. The worker yields to its event loop between batches so cancellation messages can be processed. Cancellation, node limits and trace limits return explicit incomplete statuses and the best feasible kit, with a remaining priority upper bound. Only exhausted frontiers return `optimal` and a `finished` event. Trace budgets reserve an entire transition plus completion; no event is silently dropped. Small budgets can stop before inspecting the root. Default UI limits are 10,000 inspected nodes and 40,000 trace events; configurable from 1 through 1,000,000. Limits are visible and do not change the unbounded solver API defaults.
+## 🧠 The Algorithm Behind ReliefOps
 
-Each run owns a worker and a monotonically increasing execution ID. Editing, replacing, undoing or changing limits terminates the previous worker and clears results/playback. Obsolete responses are ignored by both identity and execution ID. Explicit Cancel cooperatively stops at a batch boundary and returns a partial kit. Worker startup, runtime, decoding and malformed-message errors show a recoverable error state. Unmount disposes the worker. Protocol, orchestration and presentation live separately under `src/worker`, `src/features` and `src/playback`.
+ReliefOps uses the **Branch and Bound algorithm** to solve the **0/1 Knapsack Problem**.
 
-The mission editor provides all four presets, editable mission name/capacity, supply name/category/weight/priority, add/duplicate/delete, keyboard-operable move buttons and one-level undo. New supplies use stable UUIDs; duplicate names keep distinct identities. Raw input strings preserve blank/invalid fields for inline validation.
+The goal is to select supplies with the highest total priority without exceeding the available carrying capacity. Each supply must either be selected entirely or excluded.
 
-## Phase 4 explorer
+### Mathematical Formulation
 
-The explorer processes the real immutable execution trace into a node index with per-node event histories. Snapshot queries use binary search and never show future node states. Only created nodes up to the current playback step appear. The latest incumbent event identifies the best-known node; a prior incumbent can become a feasible candidate or a pruned node. Weight constraints identify infeasible nodes. Inspection displays the incumbent recorded at that node's latest event separately from the current step's global incumbent.
+Let:
 
-Each node now records a `boundCalculation`: current priority, contribution of whole remaining supplies, fractional weight/item weight/priority and exact rational numerator/denominator strings. These components are captured inside the existing fractional-bound calculation, not recalculated by React. Overweight nodes record `null`. Worker validation checks these fields. Search ordering and pruning arithmetic are unchanged.
+- `n` = number of available supplies
+- `wᵢ` = weight of supply `i`
+- `vᵢ` = priority value of supply `i`
+- `C` = maximum carrying capacity
+- `xᵢ ∈ {0, 1}` = 1 if supply `i` is selected, otherwise 0
 
-Playback supports play/pause, next/previous, restart/replay, speed and a keyboard-operable position slider. It starts paused, stops at the final recorded event and preserves incomplete statuses. Selecting a node pauses playback without changing the current step; the current-step explanation stays synchronized while the inspector displays the selected snapshot. Timer updates are guarded by execution identity so obsolete callbacks cannot resurrect cleared results. Reduced-motion preferences disable transitions and cap playback at one event per second. Live announcements are muted during automatic playback.
+**Objective — Maximize total priority:**
 
-The tree uses labeled include/exclude edges and text/icons/colors for six statuses. It supports branch collapse/expansion, zoom, background drag/scroll panning and fit-to-view. Rendering is capped at 60 nodes except when a selected path requires more ancestors (at most 101 for the validated 100-item maximum). Hidden counts are explicit; collapse preserves the inspected/current path. Arrow keys/Home/End navigate visible nodes, Enter/Space selects and C toggles a branch. Native buttons and an accessible tree structure expose node data to keyboard and assistive-technology users. The textual alternative renders at most 31 revealed events near the current step; the slider reaches any event. No visualization dependencies were added.
-
-Explanations distinguish the current event from the selected node's inspector. Bounds, prune reasons, decisions and incumbent updates all use trace values. Incomplete executions show their stop reason and remaining upper bound without an optimality proof. The final result summary describes the completed execution; the explorer indicates when that proof has been revealed in playback.
-
-## Phase 5 results and learning
-
-The full-width results dashboard shows proof status, selected priority/count/weight, carrying capacity, exact scaled-unit remaining capacity and utilization. Selected and excluded supplies retain IDs and display inventory numbers to distinguish duplicate names. Exclusion from the returned kit is explicitly different from pruning a search branch. Empty kits are feasible in this model; no “no feasible solution” state is fabricated. Cancelled runs retain their feasible kit without claiming optimality; failed runs display an error state with no verified result metrics.
-
-`src/features/results/resultModel.ts` derives presentation metrics from the execution and mission. Peak frontier size is reconstructed by adding created nodes and removing inspected nodes; current frontier size and prune reasons come from the same trace. Existing node counts remain sourced from the solver. Duration is omitted because the execution contract does not measure it. The comparison chart has an equivalent accessible data table showing actual priority, weight and selected count for both strategies. Percentage change is `(BnB priority − greedy priority) / greedy priority × 100`; it is omitted as undefined for a zero greedy baseline. Incomplete kits may trail greedy and are described as such, without an invented improvement or proof.
-
-Dashboard links seek the actual last incumbent update, first recorded prune or completed proof event, pause playback, clear manual node selection and focus the explorer heading. The explorer offers a return-to-results action. Mission validation is memoized so metrics are not recomputed from an entire trace on every playback tick. Edits still invalidate results and related lesson links immediately.
-
-Learning mode provides nine keyboard-operable lessons covering the problem, whole-item decisions, branching, fractional bounds, safe pruning, incumbent, optimality, greedy and exponential worst-case complexity. Each has optional technical details and links into matching real events from the current execution. Missing events, especially proof in incomplete runs, are explained instead of invented. A clearly labeled separate Flood relief example runs the same solver once with small explicit budgets (100 nodes / 500 trace events); example answers and bound arithmetic derive from that execution. Loading the example uses the editor's existing preset/undo flow; interactive optimization still runs in the worker.
-
-## Remaining limitations
-
-The algorithm still has exponential worst-case complexity. Cancellation latency depends on one batch, and frontier sorting can become costly on very large searches. Indexing an execution requires linear time and memory once when it is loaded; extremely large traces can still have an initial processing cost. Fit-to-view may make dense trees too small to read; zoom or use the textual alternative and inspector. The remaining bound is displayed approximately; pruning continues to use exact rationals. Missions remain in memory and reload resets them. Resource settings deliberately invalidate the execution. Browser editing and cancellation are separate: editing discards the old result, while Cancel retains the partial kit. Presentation mode uses a focused page rather than requesting browser fullscreen. Guided topics with no matching event remain available with an explicit explanation; they do not invent trace steps.
-
-Run from `C:\Users\win11\Documents\ReliefOps`:
-
-```powershell
-npm install
-npm run dev -- --host 127.0.0.1
-npm test
-npm run lint
-npm run build
-npm run preview -- --host 127.0.0.1
+```text
+Maximize: Σ (vᵢ × xᵢ), for i = 1 to n
 ```
 
-Open the Local URL printed by Vite. For a quick demo, optimize Flood relief (optimal priority 60, greedy 50), step through the trace, then edit capacity to confirm invalidation. Set the node limit to 2 and optimize to demonstrate an explicitly incomplete result.
+**Constraint — Total weight must not exceed capacity:**
 
-For Phase 5, inspect Selected/Excluded supplies, the strategy table/chart and Algorithm statistics. Use “See the optimality proof” or “Explain a real pruning decision” to open the corresponding paused explorer step. Open a beginner lesson and use “Show in my search” to connect the concept to that execution.
+```text
+Σ (wᵢ × xᵢ) ≤ C, for i = 1 to n
+```
+
+Each supply must either be selected entirely or excluded.
+
+### How Branch and Bound Works
+
+1. **Branching:** Explore two choices for each supply: include or exclude.
+2. **Bounding:** Estimate the maximum priority a branch could achieve using a fractional-knapsack upper bound.
+3. **Incumbent:** Track the best feasible kit found so far.
+4. **Pruning:** Discard branches that exceed capacity or cannot improve the best solution.
+5. **Optimality:** When the search completes successfully, the best feasible solution is proven optimal.
+
+ReliefOps visualizes these steps through its interactive search tree and recorded execution trace.
+
+### Time Complexity
+
+Branch and Bound can reduce unnecessary exploration through pruning, but its worst-case time complexity remains exponential.
+
+```text
+Worst-case time complexity: O(2ⁿ)
+```
+
+Actual performance depends on the number of supplies and how effectively the algorithm prunes branches.
+---
+
+## 🏗️ Technology Stack
+
+<table>
+  <tr>
+    <td valign="middle"><img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" /></td>
+    <td valign="middle">Component-based user interface</td>
+  </tr>
+  <tr>
+    <td valign="middle"><img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" /></td>
+    <td valign="middle">Type-safe application logic</td>
+  </tr>
+  <tr>
+    <td valign="middle"><img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" /></td>
+    <td valign="middle">Development server and production builds</td>
+  </tr>
+  <tr>
+    <td valign="middle"><img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" /></td>
+    <td valign="middle">Utility-first styling</td>
+  </tr>
+  <tr>
+    <td valign="middle"><img src="https://img.shields.io/badge/Lucide_React-F56565?style=for-the-badge&logo=lucide&logoColor=white" alt="Lucide React" /></td>
+    <td valign="middle">Icons and visual indicators</td>
+  </tr>
+  <tr>
+    <td valign="middle"><img src="https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white" alt="Vitest" /></td>
+    <td valign="middle">Unit and component testing</td>
+  </tr>
+  <tr>
+    <td valign="middle"><img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3" /></td>
+    <td valign="middle">Custom styling and themes</td>
+  </tr>
+  <tr>
+    <td valign="middle"><img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" /></td>
+    <td valign="middle">Frontend deployment</td>
+  </tr>
+</table>
 
 
-## Final phase: presentation mode
+The application performs optimization and visualization in the browser. The current implementation does not require a dedicated application backend or external AI API.
 
-Use **Load Flood relief demo**, then **Optimize kit**, then **Enter presentation**. The existing worker computes the demonstration: ratio-greedy chooses water + food (priority 50), while the proven optimum chooses medical + food (priority 60) at 15 kg. Demo loading uses the existing preset/undo flow and invalidates previous results. Presentation is also available for incomplete executions, always labeled as unproven.
+---
 
-The focused page reuses the results dashboard and algorithm explorer. Five topic buttons seek real events for the problem, branching, bounding, pruning and final result. Topic navigation pauses playback; event navigation, Play/Pause/Replay, restart, speed, tree inspection and text trace retain their existing behavior. Missing events are explained. Returned-kit metrics are distinguished from the step's incumbent. Expand result details for the full breakdown and greedy comparison. Escape or Exit presentation returns to the editor with playback paused and focus restored to the entry button. Presentation starts paused at the first event. Native buttons remain keyboard accessible; responsive stacking and the existing reduced-motion preference apply.
+## 🏛️ Architecture Overview
 
-Final release verification: `npm.cmd test` passed 116 tests in 9 files, including 7 presentation tests and the existing 500-instance exhaustive oracle check. `npm.cmd run lint` passed. `npm.cmd run build` passed (main JavaScript 261.42 kB / 81.39 kB gzip; worker 6.13 kB). Manual checks against the production preview verified worker optimization, paused presentation entry, real pruning/final-event navigation, playback advancing and pausing, Escape exit with focus restoration, and responsive stacking at 390 × 844. Reduced-motion rendering and incomplete/cancelled presentation semantics were tested in the automated suite. These are focused checks, not a comprehensive browser automation suite.
+The application separates optimization, mission management, visualization, and educational presentation.
+```
+ReliefOps.git/
+├── .gitignore
+├── README.md
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── src/
+│   ├── App.tsx
+│   ├── algorithm/
+│   │   ├── solver.test.ts
+│   │   └── solver.ts
+│   ├── components/
+│   │   └── Field.tsx
+│   ├── domain/
+│   │   ├── editor.test.ts
+│   │   ├── editor.ts
+│   │   └── mission.ts
+│   ├── features/
+│   │   ├── explorer/
+│   │   │   ├── AlgorithmExplorer.tsx
+│   │   │   ├── SearchTree.tsx
+│   │   │   ├── accessibility.test.tsx
+│   │   │   ├── explanations.ts
+│   │   │   ├── explorer.test.ts
+│   │   │   └── traceModel.ts
+│   │   ├── learning/
+│   │   │   ├── LearningPanel.tsx
+│   │   │   ├── LessonDetailCard.tsx
+│   │   │   ├── SnakePathJourney.tsx
+│   │   │   ├── learning.test.tsx
+│   │   │   ├── lessons.ts
+│   │   │   └── workedExample.ts
+│   │   ├── mission/
+│   │   │   ├── MissionEditor.tsx
+│   │   │   └── useMission.ts
+│   │   ├── presentation/
+│   │   │   ├── PresentationMode.tsx
+│   │   │   ├── presentation.test.tsx
+│   │   │   └── presentationModel.ts
+│   │   ├── results/
+│   │   │   ├── ResultFeedback.tsx
+│   │   │   ├── ResultsSummary.tsx
+│   │   │   ├── StrategyComparison.tsx
+│   │   │   ├── resultModel.ts
+│   │   │   └── results.test.tsx
+│   │   └── simulation/
+│   │       ├── EmergencyKitVisual.tsx
+│   │       ├── LiveKitSimulation.tsx
+│   │       ├── simulation.test.tsx
+│   │       └── simulationModel.ts
+│   ├── main.tsx
+│   ├── playback/
+│   │   ├── state.test.ts
+│   │   ├── state.ts
+│   │   └── usePlaybackClock.ts
+│   ├── styles.css
+│   ├── theme/
+│   │   ├── ThemeContext.tsx
+│   │   ├── ThemeToggle.tsx
+│   │   ├── theme.test.tsx
+│   │   └── theme.ts
+│   └── worker/
+│       ├── controller.ts
+│       ├── optimizer.worker.ts
+│       ├── protocol.ts
+│       └── worker.test.ts
+├── tsconfig.json
+└── vite.config.ts
+```
+
+### Engineering principles
+
+- **Single source of truth:** visualizations consume the actual solver execution and results.
+- **Deterministic optimization:** consistent inputs and search policies produce reproducible results.
+- **Stale-state protection:** mission edits invalidate previous executions and stop dependent playback.
+- **Honest result reporting:** incomplete searches are not labelled as proven optimal.
+- **Responsive interaction:** the interface adapts to desktop, tablet, and mobile screens.
+- **Accessible motion:** reduced-motion preferences are respected.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Install the following:
+
+- [Node.js](https://nodejs.org/) — use a version compatible with the project's dependencies.
+- npm, included with Node.js.
+- Git, if cloning the repository.
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Ashutoshmore24/ReliefOps.git
+cd ReliefOps
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Start the development server
+
+**Windows PowerShell:**
+
+```powershell
+npm.cmd run dev -- --host 127.0.0.1
+```
+
+Alternatively, use the standard command:
+
+```bash
+npm run dev
+```
+
+Open the local URL printed by Vite in your browser.
+
+### 4. Build for production
+
+```bash
+npm run build
+```
+
+### 5. Preview the production build
+
+```bash
+npm run preview
+```
+
+---
+
+## 🧪 Testing and Code Quality
+
+ReliefOps includes tests for algorithm correctness, mission validation, execution traces, playback, accessibility, results, learning interactions, presentation mode, and the packing simulation.
+
+Run the test suite:
+
+```bash
+npm test
+```
+
+Run lint:
+
+```bash
+npm run lint
+```
+
+Build the production application:
+
+```bash
+npm run build
+```
+
+## 🎮 Try the Flood Relief Demonstration
+
+The prepared Flood Relief scenario provides a concrete example of why optimization matters.
+
+According to the project's documented demonstration:
+
+| Metric | Demonstration |
+|---|---:|
+| Carrying capacity | 15 kg |
+| Greedy priority score | 50 |
+| Proven optimal priority score | 60 |
+| Improvement | 10 priority points |
+| Relative improvement over greedy | 20% |
+
+The scores illustrate that a ratio-based greedy strategy can miss a better combination of indivisible items.
+
+### Suggested demonstration workflow
+
+1. Load the Flood Relief demonstration.
+2. Review the available supplies and carrying capacity.
+3. Run the optimizer.
+4. Compare the greedy and optimal solutions.
+5. Launch the live relief-kit packing simulation.
+6. Watch the selected supplies enter the virtual payload bay.
+7. Open the algorithm explorer to inspect branching, bounds, and pruning.
+8. Explore the nine-lesson learning journey.
+9. Enter presentation mode for a guided demonstration.
+
+The application should label a solution as optimal only when the search has completed and established optimality.
+
+---
+
+## 🔮 Future Enhancements
+
+Potential future improvements include:
+
+- Exportable mission reports and optimization summaries.
+- Additional disaster-response scenarios.
+- More detailed search-efficiency analytics.
+- Guided algorithm challenges and knowledge checks.
+- Optional comparison of multiple search strategies.
+- Shareable mission configurations.
+- Enhanced presentation controls and downloadable demonstrations.
+
+These are possible future directions, not claims about currently implemented functionality.
+
+---
+
+## 🎓 Educational Value
+
+ReliefOps demonstrates concepts from Design and Analysis of Algorithms through an applied optimization problem.
+
+It connects:
+
+- 0/1 Knapsack formulation.
+- Branch and Bound.
+- Fractional upper-bound calculations.
+- Feasibility checking and pruning.
+- Incumbent tracking.
+- Greedy heuristics.
+- Optimality proofs.
+- Exponential worst-case complexity.
+
+By combining actual algorithm execution with visual feedback, the project helps learners understand not only what solution is produced, but also how and why the algorithm reaches it.
+
+---
+
+## 👨‍💻 Team
+
+| Team Member | Details | GitHub |
+|---|---|---|
+| **Ashutosh More** | B.Tech — IT PCCOE Pune | [@Ashutoshmore24](https://github.com/Ashutoshmore24) |
+| **Aniket Gawande** |  B.Tech — IT PCCOE Pune | [@aniket-gawande](https://github.com/aniket-gawande) |
+| **Ayush Chandwadkar** | B.Tech — IT PCCOE Pune | [@AyushChandwadkar](https://github.com/AyushChandwadkar) |
+---
+
+## 📄 License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+---
+
+<p align="center">
+  <strong>ReliefOps</strong><br/>
+  Limited Capacity. Maximum Impact.
+</p>
+<p align="center">
+  <strong>Thank You ❤️</strong>
+</p>
