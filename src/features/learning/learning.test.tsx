@@ -40,3 +40,35 @@ describe('beginner learning content', () => {
     expect(initial).toContain('Run an optimization'); expect(initial).toContain('href="#feedback-heading"');
   });
 });
+
+describe('interactive snake-path learning journey', () => {
+  const execution = solve(presets['Flood relief']);
+
+  it('renders all nine numbered milestones and the winding snake canvas', () => {
+    const html = renderToStaticMarkup(<LearningPanel execution={execution} explore={() => {}} loadExample={() => {}}/>);
+    for (let i = 1; i <= 9; i++) {
+      const num = String(i).padStart(2, '0');
+      expect(html).toContain(`>${num}<`);
+    }
+    expect(html).toContain('SEARCH PROGRESSION ROADMAP');
+    expect(html).toContain('Algorithm Learning Progress');
+    expect(html).toContain('snake-svg-track');
+    expect(html).toContain('role="tablist"');
+  });
+
+  it('exposes accessible tab and tabpanel attributes for keyboard navigation', () => {
+    const html = renderToStaticMarkup(<LearningPanel execution={execution} explore={() => {}} loadExample={() => {}}/>);
+    expect(html).toContain('aria-controls="lesson-panel-0"');
+    expect(html).toContain('id="lesson-panel-0"');
+    expect(html).toContain('role="tabpanel"');
+    expect(html).toContain('aria-selected="true"');
+  });
+
+  it('provides step navigation and explicit completion actions', () => {
+    const html = renderToStaticMarkup(<LearningPanel execution={execution} explore={() => {}} loadExample={() => {}}/>);
+    expect(html).toContain('Mark as completed');
+    expect(html).toContain('Previous');
+    expect(html).toContain('Next');
+    expect(html).toContain('Milestone 1 of 9');
+  });
+});

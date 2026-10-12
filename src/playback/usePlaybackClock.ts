@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { playbackDelay, tick, type Playback } from './state';
 export function useReducedMotion() {
-  const [reduced, setReduced] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const [reduced, setReduced] = useState(() => (typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false));
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
     const update = () => setReduced(media.matches);
     media.addEventListener('change', update); return () => media.removeEventListener('change', update);
