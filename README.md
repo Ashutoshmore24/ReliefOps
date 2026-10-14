@@ -367,3 +367,34 @@ This project is licensed under the MIT License. See the LICENSE file for details
 <p align="center">
   <strong>Thank You ❤️</strong>
 </p>
+# 3D Decision Lab
+
+After optimizing a mission, open **3D Decision Lab** in the algorithm explorer.
+The existing playback bar controls both the warehouse and search tree. Selecting
+a revealed tree node previews its kit without changing historical incumbent data.
+Created branches are hypothetical previews; only actual incumbent events update
+the best-so-far truck. Best-first jumps reconcile the selected supply sets.
+
+Switch to 2D for a canvas-free historical warehouse. Supply buttons offer keyboard
+selection and item details. Orbit controls are optional, with a reset camera and
+decision spotlight. A final illustrative dispatch is available only at a completed,
+proven optimal event. The results dashboard retains the separate final packing and
+greedy comparison views.
+
+All scene geometry is procedural; no models, fonts, or other assets are downloaded.
+Three.js/Fiber/Drei load only when the 3D lab is opened. Rendering uses a demand
+loop, capped pixel ratio, one shadow light, and at most twelve trial/staging crates
+and eight best-kit crates. Additional supplies remain in the HTML inventory and
+kit descriptions. Cargo lifts, transfers, and settles using the shared playback
+speed; manual steps also animate. Pausing freezes movement, large timeline seeks
+restore the selected configuration immediately, and reduced motion skips
+interpolation. Retargeting always starts at the current position and never queues
+obsolete moves. Truck dispatch rotates its wheels according to distance traveled.
+Detailed procedural vehicles, supply containers, warehouse shelving, and tents
+use a responsive camera and numbered labels with an HTML identity strip. The
+warehouse transport operates the existing shared clock. Context loss and render errors fall back
+to the historical 2D warehouse.
+
+The scene model and tests live in `src/features/simulation3d`. The solver and worker
+protocol are unchanged. Crate dimensions are illustrative: the model optimizes
+configured priority subject to weight capacity, not geometric packing or routes.
