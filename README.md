@@ -12,6 +12,7 @@
 
 </div>
 
+- Live Demo : https://relief-ops-six.vercel.app/
 ---
 
 ## 📖 Overview
@@ -25,50 +26,44 @@ In catastrophic humanitarian emergencies—such as severe flash flooding, major 
 ## ✨ Key Features
 
 ### 🎒 Live 2D Relief Kit Simulation
-- Visual emergency payload bay with animated item packing and real-time weight meters.
-- Live capacity utilization progress tracking with fractional weight precision (up to two decimal places).
-- Category-aware visual indicators for medical kits, hydration, nutrition, shelter, and communication.
+- Interactive emergency cargo packing with real-time weight and capacity tracking.
+- Category-based visualization of essential relief supplies.
 
-### 🌐 3D Decision Lab (WebGL Procedural Warehouse)
-- High-performance 3D warehouse environment rendered with **React Three Fiber (`@react-three/fiber`)** and **Three.js**.
-- Dual-vehicle visualization: dynamically compares the **Current Trial Vehicle** (hypothetical branch) against the **Best-So-Far Vehicle** (incumbent solution).
-- Animated procedural cargo transfers, wheel rotation physics on vehicle dispatch, and a dynamic **Decision Spotlight**.
-- Demand-driven render loop (`invalidate()`) ensuring 0% GPU draw when idle.
-- Seamless, zero-dependency **2D Historical Warehouse fallback** for devices with low WebGL capabilities or reduced motion preferences.
+### 🌐 3D Decision Lab
+- Procedural 3D warehouse powered by Three.js and React Three Fiber.
+- Animated cargo transfers and comparison of current vs. best solutions.
+- Lightweight 2D fallback for limited WebGL support.
 
 ### 🌳 Branch & Bound Algorithm Explorer
-- Interactive search tree visualizer mapping parent-child relationships, exploration depth, and branching choices (`include` vs. `exclude`).
-- Full execution playback bar with scrubbing, frame-by-frame stepping, and speed multipliers ($0.5\times$, $1\times$, $2\times$, $4\times$).
-- Step-by-step node inspector detailing current weight, accumulated priority, upper bounds, and pruning classifications (Overweight vs. Bounding).
-- Exact rational bound breakdown displaying fractional relaxation calculations without floating-point inaccuracies.
+- Interactive search tree with step-by-step execution playback.
+- Visualizes branching, upper bounds, and pruning decisions.
+- Exact fractional bound calculations without floating-point inaccuracies.
 
 ### ⚖️ Greedy vs. Optimal Comparison
-- Side-by-side strategy comparison proving why density-based greedy heuristics fail on 0/1 indivisible packing.
-- Clear delta metrics displaying weight differences, score improvements, and percentage performance gains.
+- Compares greedy heuristics with the optimal 0/1 knapsack solution.
+- Displays weight, score, and performance differences.
 
-### 🧭 9-Lesson Interactive Learning Journey
-- Structured pedagogical "Snake Path" curriculum guiding learners from foundational 0/1 knapsack theory to advanced branch-and-bound mechanics.
-- Connected deep links allowing students to jump straight into recorded execution events demonstrating specific concepts (e.g., pruning triggers, incumbent updates).
+### 🧭 Interactive Learning Journey
+- Nine guided lessons covering knapsack fundamentals and Branch & Bound.
+- Links concepts to real algorithm execution events.
 
 ### 🎤 Guided Presentation Mode
-- Clean, focused stage mode designed for lectures, demonstrations, and technical presentations.
-- Guided stop-by-stop presentation workflow navigating key milestone events with keyboard shortcut navigation (`Esc` to exit).
+- Distraction-free interface for lectures and demonstrations.
+- Keyboard-accessible navigation through key milestones.
 
-### ☁️ Cloud Mission Vault & Firebase Authentication
-- Secure email/password and Google OAuth sign-in with email verification enforcement.
-- Private Cloud Firestore storage allowing verified users to save, manage, and load custom missions into the optimizer.
-- Strict security rules (`firestore.rules`) enforcing data ownership, schema validation, and server timestamp integrity.
-- **Zero-lockout architecture:** core optimization, learning journeys, and 3D demos remain 100% public without requiring an account.
+### ☁️ Cloud Mission Vault
+- Firebase Authentication with email verification and Google sign-in.
+- Firestore storage for saving and managing custom missions.
+- Core features remain publicly accessible without an account.
 
-### ⚡ Dedicated Web Worker Optimizer Engine
-- Combinatorial search executes inside a dedicated Web Worker (`optimizer.worker.ts`), preventing main thread UI freezes.
-- Configurable resource limits (up to $1,000,000$ inspected nodes and trace events) safeguarding browser performance.
-- Honest status reporting: incomplete searches due to resource limits or cancellation are never falsely labeled as optimal.
+### ⚡ Web Worker Optimization
+- Runs computationally intensive searches in a background thread.
+- Configurable resource limits and honest optimization status reporting.
 
-### 🎨 Design & Accessibility Excellence
-- Seamless theme switching between tailored light and dark palettes with localStorage persistence.
-- Full compliance with `prefers-reduced-motion`—automatically disables animated camera interpolations and snaps cargo immediately.
-- Keyboard-accessible search tree, dialogs, and interactive tables with comprehensive ARIA landmark attributes.
+### 🎨 UI & Accessibility
+- Light and dark themes with persistent preferences.
+- Reduced-motion support and keyboard-accessible components.
+- Accessible navigation and interactive elements.
 
 ---
 
@@ -86,6 +81,7 @@ $$\text{Subject to } \sum_{i=1}^{n} w_i \cdot x_i \le C, \quad \text{where } x_i
 
 Because items are indivisible ($x_i \in \{0, 1\}$), supplies must either be included in full ($x_i = 1$) or completely left behind ($x_i = 0$).
 
+<img width="898" height="637" alt="image" src="https://github.com/user-attachments/assets/49a4101b-dc93-4ff5-889b-a6d5c969ecac" />
 
 ### Core Algorithmic Steps
 
@@ -130,8 +126,7 @@ Because items are indivisible ($x_i \in \{0, 1\}$), supplies must either be incl
 ## 3D Decision Lab
 
 The **3D Decision Lab** renders the historical branch-and-bound search process inside an interactive WebGL simulation.
-
-
+<img width="1200" height="614" alt="advanced-decision-lab" src="https://github.com/user-attachments/assets/b83cfe60-f102-4cb1-a015-f8aaab78f294" />
 
 ---
 
@@ -381,7 +376,7 @@ ReliefOps was developed as an applied educational platform for **Design and Anal
 
 ## 👨‍💻 Team
 
-Developed with ❤️ by the engineering team from **Pimpri Chinchwad College of Engineering (PCCOE), Pune**:
+Developed with ❤️ by :
 
 | Team Member | Academic Details | GitHub |
 |---|---|---|
@@ -402,6 +397,6 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 ### 🛡️ ReliefOps
 **Limited Capacity. Maximum Impact.**
 
-*Thank you for exploring ReliefOps!*
+*Thank you ❤️*
 
 </div>
