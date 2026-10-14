@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owns(userId) {
+      return request.auth != null
+        && request.auth.uid == userId
+        && request.auth.token.email_verified == true;
+    }
+    function validMission(data) {
+      return data.keys().hasAll(['name', 'capacity', 'supplies', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['name', 'capacity', 'supplies', 'createdAt', 'updatedAt'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 120
+        && data.capacity is number && data.capacity >= 0 && data.capacity <= 10000
+        && data.supplies is list && data.supplies.size() <= 100
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+    match /users/{userId}/missions/{missionId} {
+      allow read, delete: if owns(userId);
+      allow create: if owns(userId) && validMission(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+      allow update: if owns(userId) && validMission(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time;
+    }
+    // No other collection or nested path is publicly accessible.
+    match /{document=**} { allow read, write: if false; }
+  }
+}

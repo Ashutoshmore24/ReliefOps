@@ -22,11 +22,12 @@ export function useMission() {
     });
     return () => { controller.current?.dispose(); controller.current = null; };
   }, []);
-  const invalidate = () => { controller.current?.invalidate(); setPlayback(emptyPlayback); setProgress(null); setStatus('idle'); setError(''); };
+  const invalidate = useCallback(() => { controller.current?.invalidate(); setPlayback(emptyPlayback); setProgress(null); setStatus('idle'); setError(''); }, []);
   const replace = (next: Draft) => { invalidate(); setUndo(draft); setDraft(next); };
   return { draft, playback, setPlayback: updatePlayback, status, error, progress, undo,
     edit: (action: Edit) => replace(editDraft(draft, action)),
     preset: (name: string) => replace(presetDraft(name)),
+    load: (next: Draft) => replace(structuredClone(next)),
     restore: () => { if (undo) { invalidate(); setDraft(undo); setUndo(null); } },
     start: (mission: Mission, limits: Limits) => { setPlayback(emptyPlayback); setProgress(null); setError(''); setStatus('running'); controller.current?.start(mission, limits); },
     cancel: () => { setStatus('cancelling'); controller.current?.cancel(); },

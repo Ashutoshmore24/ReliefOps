@@ -398,3 +398,62 @@ to the historical 2D warehouse.
 The scene model and tests live in `src/features/simulation3d`. The solver and worker
 protocol are unchanged. Crate dimensions are illustrative: the model optimizes
 configured priority subject to weight capacity, not geometric packing or routes.
+# Firebase authentication
+
+Email/password sign-in, account creation, email verification, password reset,
+Google sign-in, Google account linking, and sign-out use Firebase Authentication.
+Password accounts must verify their email before accessing saved missions.
+Firebase resolves the restored session before access is granted. The default
+session lasts for the browser session; “Keep me signed in” enables persistent
+Firebase-managed sign-in. Passwords are never stored by application code.
+
+Setup:
+
+1. Create a Firebase project and register a Web app in Project settings.
+2. Copy `.env.example` to `.env.local`. Set `VITE_FIREBASE_API_KEY`,
+   `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, and
+   `VITE_FIREBASE_APP_ID` from the Web app configuration. These are public client
+   configuration values. Never add an Admin service-account key to a Vite variable.
+3. In Authentication > Sign-in method, enable Email/Password and Google.
+   Google setup requires selecting a project support email.
+4. In Authentication > Settings > Authorized domains, add the domains you use:
+   `localhost`, `127.0.0.1` if used, and your production hostname. New Firebase
+   projects may not include localhost automatically. Use hostnames, not full URLs.
+5. Configure a password policy (at least 8 characters; a stronger project policy
+   is supported through Firebase's `validatePassword`) and enable email enumeration
+   protection. Check verification/password-reset email templates and sender settings.
+6. Restart Vite after changing `.env.local`. Add the same values to your hosting
+   build environment when you separately choose to deploy.
+
+Optimization, results, lessons, presentation mode and the 3D Decision Lab remain
+public. **My missions** is the only protected area. A verified account can save
+the current mission, load a saved mission into the editor, and delete one after
+confirmation. Saving creates a new snapshot; it does not silently overwrite an
+earlier mission. The library shows up to 100 recent records. Changing accounts
+clears the private library and removes its listener. Public demo playback remains
+usable. Loading a saved mission uses the editor's existing invalidation and undo.
+An unconfigured project does not create a fake session or grant library access.
+
+In the Firebase Console, create the default Cloud Firestore database in production
+mode and publish **firestore.rules** in the Rules tab before using the library.
+Alternatively, after authenticating the Firebase CLI, run
+`firebase deploy --only firestore:rules --project reliefops-272c2` when you choose
+to deploy rules. No rules or application deployment is performed automatically.
+Documents are stored under `users/{uid}/missions/{missionId}`. Rules enforce
+verified authentication and ownership on reads, creates, updates, and deletes;
+other paths are denied. Server timestamps are required and creation time cannot
+be overwritten. Mission inputs are validated on save and again on load. Invalid
+stored supply entries are never passed to the optimizer.
+
+Authorization is enforced by Firestore rules, beyond the UI gate. No Admin SDK
+credentials belong in the client. A future private API must verify Firebase ID
+tokens server-side. Administrative roles, if added later, must be assigned through
+trusted Admin SDK custom claims, never a client-selected role.
+
+Tests cover denied/loading/unverified access, password validation, Firebase
+gateway calls, reset-error normalization, session refresh races, provider linking,
+and observer cleanup. Live provider sign-in requires your configured Firebase
+project and has not been validated without it. Firebase docs:
+https://firebase.google.com/docs/auth/web/password-auth
+https://firebase.google.com/docs/auth/web/google-signin
+https://firebase.google.com/docs/auth/admin/custom-claims

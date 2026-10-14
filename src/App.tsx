@@ -1,5 +1,5 @@
 import { Activity, ArrowRight, ShieldCheck, Square } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Field } from "./components/Field";
 import { validateDraft } from "./domain/editor";
 import { MissionEditor } from "./features/mission/MissionEditor";
@@ -12,8 +12,15 @@ import { pause, seek } from "./playback/state";
 import { PresentationMode } from "./features/presentation/PresentationMode";
 import { ThemeProvider } from "./theme/ThemeContext";
 import { ThemeToggle } from "./theme/ThemeToggle";
+import { AuthProvider, useAuth } from './auth/AuthContext';
+import { AccountMenu, AuthDialog } from './auth/AuthPanel';
+const SavedMissions = lazy(() => import('./features/savedMissions/SavedMissions'));
 
 function AppContent() {
+  const auth = useAuth();
+  const [authOpen, setAuthOpen] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [privateDraftOwner, setPrivateDraftOwner] = useState<string | null>(null);
   const model = useMission();
   const [nodeLimit, setNodeLimit] = useState("10000"),
     [traceLimit, setTraceLimit] = useState("40000");
@@ -23,6 +30,14 @@ function AppContent() {
   );
   const [explorerVisit, setExplorerVisit] = useState(0);
   const [presenting, setPresenting] = useState(false);
+  const privateSessionChanged = privateDraftOwner !== null && privateDraftOwner !== auth.user?.uid;
+  useEffect(() => {
+    if (privateSessionChanged) {
+      model.preset('Flood relief');
+      setPrivateDraftOwner(null);
+      setPresenting(false);
+    }
+  }, [privateSessionChanged, model]);
   const exitPresentation = useCallback(() => {
     setPresenting(false);
     model.setPlayback(pause(model.playback));
@@ -40,7 +55,8 @@ function AppContent() {
     validLimit(nodeLimit) &&
     validLimit(traceLimit);
   const running = model.status === "running" || model.status === "cancelling",
-    execution = model.playback.execution;
+    execution = privateSessionChanged ? null : model.playback.execution;
+  const choosePreset = (name: string) => { model.preset(name); setPrivateDraftOwner(null); };
   const changeLimit = (field: "node" | "trace", value: string) => {
     model.invalidate();
     (field === "node" ? setNodeLimit : setTraceLimit)(value);
@@ -57,6 +73,7 @@ function AppContent() {
     setExplorerVisit((value) => value + 1);
     focusSection("explorer-heading");
   };
+  if (privateSessionChanged) return <main role="status">Restoring the public demonstration…</main>;
   if (presenting && execution)
     return (
       <PresentationMode
@@ -79,12 +96,15 @@ function AppContent() {
         </a>
         <div className="header-actions">
           <ThemeToggle />
+          {auth.user ? <><AccountMenu/>{!auth.access && <button onClick={() => setAuthOpen(true)}>Verify email</button>}</> : <button disabled={auth.status === 'loading'} onClick={() => setAuthOpen(true)}>{auth.status === 'loading' ? 'Checking session…' : 'Sign in'}</button>}
+          <button aria-expanded={libraryOpen} onClick={() => setLibraryOpen(value => !value)}>My missions</button>
           <span className="header-label">
             <Activity size={15} /> OPERATIONS LAB
           </span>
         </div>
       </header>
       <main id="main">
+        {libraryOpen && <Suspense fallback={<section className="panel" role="status">Loading your mission library…</section>}><SavedMissions key={auth.user?.uid ?? 'guest'} draft={model.draft} load={next => { if (auth.access && auth.user) { model.load(next); setPrivateDraftOwner(auth.user.uid); } }} signIn={() => setAuthOpen(true)}/></Suspense>}
         <div className="hero">
           <div>
             <p className="eyebrow">LIMITED CAPACITY. MAXIMUM IMPACT.</p>
@@ -114,7 +134,7 @@ function AppContent() {
           <div className="presentation-actions">
             <button
               disabled={running}
-              onClick={() => model.preset("Flood relief")}
+              onClick={() => choosePreset("Flood relief")}
             >
               Load Flood relief demo
             </button>
@@ -136,7 +156,7 @@ function AppContent() {
             draft={model.draft}
             errors={errors}
             edit={model.edit}
-            preset={model.preset}
+            preset={choosePreset}
             undo={Boolean(model.undo)}
             restore={model.restore}
           />
@@ -198,12 +218,12 @@ function AppContent() {
               <button
                 className="primary optimize"
                 disabled={!valid || running}
-                onClick={() =>
+                onClick={() => {
                   model.start(mission, {
                     nodeLimit: Number(nodeLimit),
                     traceLimit: Number(traceLimit),
-                  })
-                }
+                  });
+                }}
               >
                 {running ? (
                   <>
@@ -296,7 +316,7 @@ function AppContent() {
           execution={execution}
           explore={explore}
           loadExample={() => {
-            model.preset("Flood relief");
+            choosePreset("Flood relief");
             focusSection("setup-heading");
           }}
         />
@@ -305,6 +325,7 @@ function AppContent() {
           <span>Deterministic search. Real decisions.</span>
         </footer>
       </main>
+      <AuthDialog open={authOpen} close={() => setAuthOpen(false)}/>
     </>
   );
 }
@@ -312,7 +333,7 @@ function AppContent() {
 export default function App() {
   return (
     <ThemeProvider>
-      <AppContent />
+      <AuthProvider><AppContent/></AuthProvider>
     </ThemeProvider>
   );
 }
