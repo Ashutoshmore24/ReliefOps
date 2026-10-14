@@ -1,130 +1,201 @@
 # 🛡️ ReliefOps — Smart Disaster Relief Kit Optimizer
 
-### Limited Capacity. Maximum Impact.
+<div align="center">
 
-**ReliefOps** is an interactive, web-based educational platform that demonstrates how the **Branch and Bound algorithm** solves the 0/1 Knapsack Problem to assemble high-impact disaster relief kits under limited carrying capacity.
+[![Live Demo](https://img.shields.io/badge/Demo-Live%20on%20Vercel-success?style=for-the-badge&logo=vercel&logoColor=white)](https://relief-ops-six.vercel.app/)
+[![React](https://img.shields.io/badge/React%2019-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript%205.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Three.js](https://img.shields.io/badge/Three.js%20%2F%20R3F-049EF4?style=for-the-badge&logo=threedotjs&logoColor=white)](https://threejs.org/)
+[![Firebase](https://img.shields.io/badge/Firebase%2012-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS%20v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
-Instead of treating algorithm analysis as static theory, ReliefOps turns optimization into an interactive experience. Users can build disaster-response scenarios, visualize supplies being packed into a virtual emergency kit, explore branching and pruning decisions, compare greedy and optimal solutions, and learn the algorithm through a guided learning journey.
+</div>
 
-Built with React, TypeScript, and modern frontend technologies, ReliefOps combines algorithmic correctness with visual simulation and beginner-friendly explanations.
+---
 
-- Live Demo : https://relief-ops-six.vercel.app/
+## 📖 Overview
+
+In catastrophic humanitarian emergencies—such as severe flash flooding, major earthquakes, or acute medical crises—first responders face a critical constraint: **carrying capacity is strictly limited**, while the potential combinations of life-saving supplies are vast. Choosing supplies by intuition or simple heuristic can easily lead to suboptimal outcomes, potentially leaving higher-priority relief supplies behind.
+
+**ReliefOps** transforms algorithmic optimization from abstract mathematical theory into an interactive, visual decision lab. Built with **React 19**, **TypeScript**, **Three.js / React Three Fiber**, and **Tailwind CSS**, ReliefOps allows users to configure emergency disaster scenarios, simulate kit packing in real time, inspect branch-and-bound search trees down to exact rational bounds, explore decisions in a full 3D procedural relief warehouse, compare greedy heuristics against proven optima, and securely save custom missions to the cloud.
 
 ---
 
 ## ✨ Key Features
 
-- **🎒 Live Relief Kit Simulation** — Watch supplies get packed into a virtual emergency kit with live weight, capacity, and priority updates.
-- **🌳 Branch and Bound Explorer** — Visualize the search tree, branching decisions, upper bounds, and pruning.
-- **⚖️ Greedy vs. Optimal Comparison** — Compare selected supplies, total weight, and priority scores to understand why greedy selection can fail.
-- **🧭 Interactive Learning Journey** — Learn Branch and Bound through nine beginner-friendly lessons connected to the algorithm explorer.
-- **🎤 Presentation Mode** — Demonstrate the algorithm using guided topics, execution traces, and playback controls.
-- **🎨 Light and Dark Themes** — Switch between elegant light and dark modes with saved preferences.
-- **🧰 Mission Editor** — Create and customize scenarios by adding supplies and adjusting their weights, priority values, and carrying capacity.
+### 🎒 Live 2D Relief Kit Simulation
+- Visual emergency payload bay with animated item packing and real-time weight meters.
+- Live capacity utilization progress tracking with fractional weight precision (up to two decimal places).
+- Category-aware visual indicators for medical kits, hydration, nutrition, shelter, and communication.
+
+### 🌐 3D Decision Lab (WebGL Procedural Warehouse)
+- High-performance 3D warehouse environment rendered with **React Three Fiber (`@react-three/fiber`)** and **Three.js**.
+- Dual-vehicle visualization: dynamically compares the **Current Trial Vehicle** (hypothetical branch) against the **Best-So-Far Vehicle** (incumbent solution).
+- Animated procedural cargo transfers, wheel rotation physics on vehicle dispatch, and a dynamic **Decision Spotlight**.
+- Demand-driven render loop (`invalidate()`) ensuring 0% GPU draw when idle.
+- Seamless, zero-dependency **2D Historical Warehouse fallback** for devices with low WebGL capabilities or reduced motion preferences.
+
+### 🌳 Branch & Bound Algorithm Explorer
+- Interactive search tree visualizer mapping parent-child relationships, exploration depth, and branching choices (`include` vs. `exclude`).
+- Full execution playback bar with scrubbing, frame-by-frame stepping, and speed multipliers ($0.5\times$, $1\times$, $2\times$, $4\times$).
+- Step-by-step node inspector detailing current weight, accumulated priority, upper bounds, and pruning classifications (Overweight vs. Bounding).
+- Exact rational bound breakdown displaying fractional relaxation calculations without floating-point inaccuracies.
+
+### ⚖️ Greedy vs. Optimal Comparison
+- Side-by-side strategy comparison proving why density-based greedy heuristics fail on 0/1 indivisible packing.
+- Clear delta metrics displaying weight differences, score improvements, and percentage performance gains.
+
+### 🧭 9-Lesson Interactive Learning Journey
+- Structured pedagogical "Snake Path" curriculum guiding learners from foundational 0/1 knapsack theory to advanced branch-and-bound mechanics.
+- Connected deep links allowing students to jump straight into recorded execution events demonstrating specific concepts (e.g., pruning triggers, incumbent updates).
+
+### 🎤 Guided Presentation Mode
+- Clean, focused stage mode designed for lectures, demonstrations, and technical presentations.
+- Guided stop-by-stop presentation workflow navigating key milestone events with keyboard shortcut navigation (`Esc` to exit).
+
+### ☁️ Cloud Mission Vault & Firebase Authentication
+- Secure email/password and Google OAuth sign-in with email verification enforcement.
+- Private Cloud Firestore storage allowing verified users to save, manage, and load custom missions into the optimizer.
+- Strict security rules (`firestore.rules`) enforcing data ownership, schema validation, and server timestamp integrity.
+- **Zero-lockout architecture:** core optimization, learning journeys, and 3D demos remain 100% public without requiring an account.
+
+### ⚡ Dedicated Web Worker Optimizer Engine
+- Combinatorial search executes inside a dedicated Web Worker (`optimizer.worker.ts`), preventing main thread UI freezes.
+- Configurable resource limits (up to $1,000,000$ inspected nodes and trace events) safeguarding browser performance.
+- Honest status reporting: incomplete searches due to resource limits or cancellation are never falsely labeled as optimal.
+
+### 🎨 Design & Accessibility Excellence
+- Seamless theme switching between tailored light and dark palettes with localStorage persistence.
+- Full compliance with `prefers-reduced-motion`—automatically disables animated camera interpolations and snaps cargo immediately.
+- Keyboard-accessible search tree, dialogs, and interactive tables with comprehensive ARIA landmark attributes.
 
 ---
 
 ## 🧠 The Algorithm Behind ReliefOps
 
-ReliefOps uses the **Branch and Bound algorithm** to solve the **0/1 Knapsack Problem**.
-
-The goal is to select supplies with the highest total priority without exceeding the available carrying capacity. Each supply must either be selected entirely or excluded.
+ReliefOps models disaster kit preparation as the classic **0/1 Knapsack Problem**, solving it to mathematical optimality using the **Branch and Bound** paradigm.
 
 ### Mathematical Formulation
 
-Let:
+Given an inventory of $n$ available supplies, each having weight $w_i > 0$ and priority score $v_i \ge 0$, and a transport vehicle with carrying capacity $C$:
 
-- `n` = number of available supplies
-- `wᵢ` = weight of supply `i`
-- `vᵢ` = priority value of supply `i`
-- `C` = maximum carrying capacity
-- `xᵢ ∈ {0, 1}` = 1 if supply `i` is selected, otherwise 0
+$$\text{Maximize } \sum_{i=1}^{n} v_i \cdot x_i$$
 
-**Objective — Maximize total priority:**
+$$\text{Subject to } \sum_{i=1}^{n} w_i \cdot x_i \le C, \quad \text{where } x_i \in \{0, 1\}$$
 
-```text
-Maximize: Σ (vᵢ × xᵢ), for i = 1 to n
-```
+Because items are indivisible ($x_i \in \{0, 1\}$), supplies must either be included in full ($x_i = 1$) or completely left behind ($x_i = 0$).
 
-**Constraint — Total weight must not exceed capacity:**
 
-```text
-Σ (wᵢ × xᵢ) ≤ C, for i = 1 to n
-```
+### Core Algorithmic Steps
 
-Each supply must either be selected entirely or excluded.
+1. **Pre-processing & Density Ordering:**  
+   Supplies are sorted in non-increasing order of their priority-to-weight ratio:
+   $$\frac{v_1}{w_1} \ge \frac{v_2}{w_2} \ge \dots \ge \frac{v_n}{w_n}$$
+   Ties are broken deterministically by original inventory order.
 
-### How Branch and Bound Works
+2. **Branching:**  
+   At each level $i$ of the search tree, two child branches are evaluated:
+   - **Include ($x_i = 1$):** Add supply $i$ to the kit, increasing current weight by $w_i$ and priority by $v_i$.
+   - **Exclude ($x_i = 0$):** Leave supply $i$ behind, keeping current weight and priority unchanged.
 
-1. **Branching:** Explore two choices for each supply: include or exclude.
-2. **Bounding:** Estimate the maximum priority a branch could achieve using a fractional-knapsack upper bound.
-3. **Incumbent:** Track the best feasible kit found so far.
-4. **Pruning:** Discard branches that exceed capacity or cannot improve the best solution.
-5. **Optimality:** When the search completes successfully, the best feasible solution is proven optimal.
+3. **Fractional Bounding (Relaxation):**  
+   To determine whether a branch is worth exploring, ReliefOps computes an admissible upper bound using the continuous fractional relaxation:
+   $$\text{Upper Bound} = \text{Current Priority} + \sum_{k=\text{depth}}^{j-1} v_k + \left( \frac{C - W_{\text{accumulated}}}{w_j} \right) \cdot v_j$$
+   Because the relaxed knapsack problem allows fractional items, its maximum value is guaranteed to be greater than or equal to the best integer solution reachable from that branch.
+   > **Precision Engineering:** ReliefOps performs all fractional bound evaluations and comparisons using exact rational arithmetic (`BigInt` numerator and denominator cross-multiplication), eliminating floating-point rounding errors.
 
-ReliefOps visualizes these steps through its interactive search tree and recorded execution trace.
+4. **Incumbent Maintenance:**  
+   The algorithm tracks the highest-priority feasible solution discovered so far ($v_{\text{incumbent}}$). When a feasible leaf node or complete solution exceeds the incumbent, the best-so-far kit is updated.
 
-### Time Complexity
+5. **Pruning (Bounding & Feasibility):**  
+   A branch is pruned (discarded without further exploration) if:
+   - **Overweight:** Accumulated weight exceeds capacity ($\sum w_i x_i > C$).
+   - **Bound Dominated:** The exact rational upper bound is less than or equal to the current incumbent ($\text{Upper Bound} \le v_{\text{incumbent}}$).
 
-Branch and Bound can reduce unnecessary exploration through pruning, but its worst-case time complexity remains exponential.
+6. **Search Strategy:**  
+   ReliefOps uses a **Best-Bound-First** priority queue strategy, prioritizing nodes with the highest upper bound to maximize the likelihood of finding strong incumbents early and pruning wider subtrees.
 
-```text
-Worst-case time complexity: O(2ⁿ)
-```
+### Complexity & Safety
 
-Actual performance depends on the number of supplies and how effectively the algorithm prunes branches.
+| Parameter | Theoretical Bound | Practical Behavior in ReliefOps |
+|---|---|---|
+| **Worst-Case Time** | $\mathcal{O}(2^n)$ | Exponential worst case when pruning cannot eliminate branches |
+| **Average Time** | $\mathcal{O}(k \cdot 2^n), \quad k \ll 1$ | Drastically reduced through early pruning with tight fractional bounds |
+| **Frontier Memory** | $\mathcal{O}(2^n)$ | Managed via user-configurable node limits (default 10,000; up to 1,000,000) |
+| **Trace Storage** | $\mathcal{O}(\text{events})$ | Safeguarded by configurable trace event limits (default 40,000) |
+
 ---
 
-## 🏗️ Technology Stack
+## 3D Decision Lab
+
+The **3D Decision Lab** renders the historical branch-and-bound search process inside an interactive WebGL simulation.
+
+
+
+---
+
+### 🏗️ Technology Stack
 
 <table>
   <tr>
     <td valign="middle"><img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" /></td>
-    <td valign="middle">Component-based user interface</td>
+    <td valign="middle"><code>19.1.1</code></td>
+    <td valign="middle">Component-based UI, concurrent rendering, and context management</td>
   </tr>
   <tr>
     <td valign="middle"><img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" /></td>
-    <td valign="middle">Type-safe application logic</td>
+    <td valign="middle"><code>5.9.2</code></td>
+    <td valign="middle">Type-safe application logic, domain modeling, and worker protocols</td>
   </tr>
   <tr>
     <td valign="middle"><img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" /></td>
-    <td valign="middle">Development server and production builds</td>
+    <td valign="middle"><code>6.3.5</code></td>
+    <td valign="middle">Next-generation build tool and hot module replacement development server</td>
   </tr>
   <tr>
     <td valign="middle"><img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" /></td>
-    <td valign="middle">Utility-first styling</td>
+    <td valign="middle"><code>4.1.12</code></td>
+    <td valign="middle">Utility-first responsive styling and fluid layout system</td>
   </tr>
   <tr>
-    <td valign="middle"><img src="https://img.shields.io/badge/Lucide_React-F56565?style=for-the-badge&logo=lucide&logoColor=white" alt="Lucide React" /></td>
-    <td valign="middle">Icons and visual indicators</td>
+    <td valign="middle"><img src="https://img.shields.io/badge/Three.js-000000?style=for-the-badge&logo=threedotjs&logoColor=white" alt="Three.js" /></td>
+    <td valign="middle"><code>0.180.0</code></td>
+    <td valign="middle">Core WebGL procedural 3D scene graph and lighting calculations</td>
   </tr>
   <tr>
-    <td valign="middle"><img src="https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white" alt="Vitest" /></td>
-    <td valign="middle">Unit and component testing</td>
+    <td valign="middle"><img src="https://img.shields.io/badge/React_Three_Fiber-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React Three Fiber" /></td>
+    <td valign="middle"><code>9.3.0</code></td>
+    <td valign="middle">Declarative React renderer for Three.js scene graphs</td>
   </tr>
   <tr>
-    <td valign="middle"><img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3" /></td>
-    <td valign="middle">Custom styling and themes</td>
+    <td valign="middle"><img src="https://img.shields.io/badge/React_Three_Drei-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React Three Drei" /></td>
+    <td valign="middle"><code>10.7.6</code></td>
+    <td valign="middle">3D helpers, including RoundedBox, HTML overlays, and OrbitControls</td>
   </tr>
   <tr>
-    <td valign="middle"><img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" /></td>
-    <td valign="middle">Frontend deployment</td>
+    <td valign="middle"><img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=000000" alt="Firebase" /></td>
+    <td valign="middle"><code>12.19.0</code></td>
+    <td valign="middle">Cloud Authentication with Email/Password and Google, plus Firestore database</td>
   </tr>
 </table>
 
+### Directory Structure
 
-The application performs optimization and visualization in the browser. The current implementation does not require a dedicated application backend or external AI API.
-
----
-
-## 🏛️ Architecture Overview
-
-The application separates optimization, mission management, visualization, and educational presentation.
 ```
 ReliefOps.git/
+├── .env.example
+├── .firebaserc
 ├── .gitignore
+├── LICENSE
 ├── README.md
+├── artifacts/
+│   ├── advanced-decision-lab.png
+│   ├── authentication-preview.png
+│   └── decision-lab-preview.png
 ├── eslint.config.js
+├── firebase.json
+├── firestore.rules
 ├── index.html
 ├── package-lock.json
 ├── package.json
@@ -133,6 +204,14 @@ ReliefOps.git/
 │   ├── algorithm/
 │   │   ├── solver.test.ts
 │   │   └── solver.ts
+│   ├── auth/
+│   │   ├── AuthContext.tsx
+│   │   ├── AuthPanel.tsx
+│   │   ├── authUi.test.tsx
+│   │   ├── firebase.test.ts
+│   │   ├── firebase.ts
+│   │   ├── policy.test.ts
+│   │   └── policy.ts
 │   ├── components/
 │   │   └── Field.tsx
 │   ├── domain/
@@ -167,11 +246,24 @@ ReliefOps.git/
 │   │   │   ├── StrategyComparison.tsx
 │   │   │   ├── resultModel.ts
 │   │   │   └── results.test.tsx
-│   │   └── simulation/
-│   │       ├── EmergencyKitVisual.tsx
-│   │       ├── LiveKitSimulation.tsx
-│   │       ├── simulation.test.tsx
-│   │       └── simulationModel.ts
+│   │   ├── savedMissions/
+│   │   │   ├── SavedMissions.tsx
+│   │   │   ├── firestoreRules.test.ts
+│   │   │   ├── missionStore.test.ts
+│   │   │   └── missionStore.ts
+│   │   ├── simulation/
+│   │   │   ├── EmergencyKitVisual.tsx
+│   │   │   ├── LiveKitSimulation.tsx
+│   │   │   ├── simulation.test.tsx
+│   │   │   └── simulationModel.ts
+│   │   └── simulation3d/
+│   │       ├── DecisionLab3D.tsx
+│   │       ├── ReliefScene.tsx
+│   │       ├── WarehouseModels.tsx
+│   │       ├── motion.test.ts
+│   │       ├── motion.ts
+│   │       ├── sceneModel.test.ts
+│   │       └── sceneModel.ts
 │   ├── main.tsx
 │   ├── playback/
 │   │   ├── state.test.ts
@@ -183,6 +275,7 @@ ReliefOps.git/
 │   │   ├── ThemeToggle.tsx
 │   │   ├── theme.test.tsx
 │   │   └── theme.ts
+│   ├── vite-env.d.ts
 │   └── worker/
 │       ├── controller.ts
 │       ├── optimizer.worker.ts
@@ -190,16 +283,6 @@ ReliefOps.git/
 │       └── worker.test.ts
 ├── tsconfig.json
 └── vite.config.ts
-```
-
-### Engineering principles
-
-- **Single source of truth:** visualizations consume the actual solver execution and results.
-- **Deterministic optimization:** consistent inputs and search policies produce reproducible results.
-- **Stale-state protection:** mission edits invalidate previous executions and stop dependent playback.
-- **Honest result reporting:** incomplete searches are not labelled as proven optimal.
-- **Responsive interaction:** the interface adapts to desktop, tablet, and mobile screens.
-- **Accessible motion:** reduced-motion preferences are respected.
 
 ---
 
@@ -207,48 +290,62 @@ ReliefOps.git/
 
 ### Prerequisites
 
-Install the following:
+Ensure you have the following installed on your system:
+- **Node.js**: Version `18.0.0` or higher (Node `20+` recommended)
+- **npm**: Version `9.0.0` or higher
+- **Git**: For repository version control
 
-- [Node.js](https://nodejs.org/) — use a version compatible with the project's dependencies.
-- npm, included with Node.js.
-- Git, if cloning the repository.
-
-### 1. Clone the repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Ashutoshmore24/ReliefOps.git
 cd ReliefOps
 ```
 
-### 2. Install dependencies
+### 2. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Start the development server
+### 3. Configure Environment Variables (Optional)
 
-**Windows PowerShell:**
+The application runs fully out-of-the-box in public mode without Firebase. If you wish to enable the **My missions** cloud vault and user sign-in:
 
-```powershell
-npm.cmd run dev -- --host 127.0.0.1
-```
+1. Copy the example configuration:
+   ```bash
+   cp .env.example .env.local
+   ```
+2. Populate `.env.local` with your Firebase Web App credentials:
+   ```env
+   VITE_FIREBASE_API_KEY="your-api-key"
+   VITE_FIREBASE_AUTH_DOMAIN="your-project-id.firebaseapp.com"
+   VITE_FIREBASE_PROJECT_ID="your-project-id"
+   VITE_FIREBASE_APP_ID="your-app-id"
+   ```
 
-Alternatively, use the standard command:
+### 4. Run the Development Server
 
 ```bash
 npm run dev
 ```
 
-Open the local URL printed by Vite in your browser.
+For Windows PowerShell users:
+```powershell
+npm.cmd run dev -- --host 127.0.0.1
+```
 
-### 4. Build for production
+Open the printed URL (typically `http://localhost:5173` or `http://127.0.0.1:5173`) in your browser.
+
+### 5. Build for Production
 
 ```bash
 npm run build
 ```
 
-### 5. Preview the production build
+This compiles TypeScript (`tsc -b`) and generates an optimized production bundle in the `dist/` directory.
+
+### 6. Preview Production Build Locally
 
 ```bash
 npm run preview
@@ -256,204 +353,55 @@ npm run preview
 
 ---
 
-## 🧪 Testing and Code Quality
+## 🧪 Testing & Code Quality
 
-ReliefOps includes tests for algorithm correctness, mission validation, execution traces, playback, accessibility, results, learning interactions, presentation mode, and the packing simulation.
-
-Run the test suite:
+ReliefOps maintains a rigorous test suite using **Vitest** covering algorithm correctness, exact rational math, Web Worker protocols, UI accessibility, and Firestore security rules:
 
 ```bash
+# Run all unit and integration tests
 npm test
-```
 
-Run lint:
-
-```bash
+# Run ESLint for code style and syntax checks
 npm run lint
 ```
 
-Build the production application:
-
-```bash
-npm run build
-```
-
-## 🎮 Try the Flood Relief Demonstration
-
-The prepared Flood Relief scenario provides a concrete example of why optimization matters.
-
-According to the project's documented demonstration:
-
-| Metric | Demonstration |
-|---|---:|
-| Carrying capacity | 15 kg |
-| Greedy priority score | 50 |
-| Proven optimal priority score | 60 |
-| Improvement | 10 priority points |
-| Relative improvement over greedy | 20% |
-
-The scores illustrate that a ratio-based greedy strategy can miss a better combination of indivisible items.
-
-### Suggested demonstration workflow
-
-1. Load the Flood Relief demonstration.
-2. Review the available supplies and carrying capacity.
-3. Run the optimizer.
-4. Compare the greedy and optimal solutions.
-5. Launch the live relief-kit packing simulation.
-6. Watch the selected supplies enter the virtual payload bay.
-7. Open the algorithm explorer to inspect branching, bounds, and pruning.
-8. Explore the nine-lesson learning journey.
-9. Enter presentation mode for a guided demonstration.
-
-The application should label a solution as optimal only when the search has completed and established optimality.
-
----
-
-## 🔮 Future Enhancements
-
-Potential future improvements include:
-
-- Exportable mission reports and optimization summaries.
-- Additional disaster-response scenarios.
-- More detailed search-efficiency analytics.
-- Guided algorithm challenges and knowledge checks.
-- Optional comparison of multiple search strategies.
-- Shareable mission configurations.
-- Enhanced presentation controls and downloadable demonstrations.
-
-These are possible future directions, not claims about currently implemented functionality.
-
----
-
 ## 🎓 Educational Value
 
-ReliefOps demonstrates concepts from Design and Analysis of Algorithms through an applied optimization problem.
+ReliefOps was developed as an applied educational platform for **Design and Analysis of Algorithms (DAA)**. It provides a visual bridge between theoretical concepts and practical software engineering:
 
-It connects:
-
-- 0/1 Knapsack formulation.
-- Branch and Bound.
-- Fractional upper-bound calculations.
-- Feasibility checking and pruning.
-- Incumbent tracking.
-- Greedy heuristics.
-- Optimality proofs.
-- Exponential worst-case complexity.
-
-By combining actual algorithm execution with visual feedback, the project helps learners understand not only what solution is produced, but also how and why the algorithm reaches it.
+- **0/1 Knapsack Problem** formulation and constraints.
+- **Branch and Bound** state-space tree traversal.
+- **Linear Programming Relaxation** for admissible upper bounding.
+- **Pruning Mechanics** (bounding vs feasibility).
+- **Incumbent Tracking** and optimality proofs.
+- **Greedy Approximation Failures** on discrete, indivisible items.
+- **Exponential Complexity** ($\mathcal{O}(2^n)$) and resource budgeting.
 
 ---
 
 ## 👨‍💻 Team
 
-| Team Member | Details | GitHub |
+Developed with ❤️ by the engineering team from **Pimpri Chinchwad College of Engineering (PCCOE), Pune**:
+
+| Team Member | Academic Details | GitHub |
 |---|---|---|
-| **Ashutosh More** | B.Tech — IT PCCOE Pune | [@Ashutoshmore24](https://github.com/Ashutoshmore24) |
-| **Aniket Gawande** |  B.Tech — IT PCCOE Pune | [@aniket-gawande](https://github.com/aniket-gawande) |
-| **Ayush Chandwadkar** | B.Tech — IT PCCOE Pune | [@AyushChandwadkar](https://github.com/AyushChandwadkar) |
+| **Ashutosh More** | B.Tech — Information Technology, PCCOE Pune | [@Ashutoshmore24](https://github.com/Ashutoshmore24) |
+| **Aniket Gawande** | B.Tech — Information Technology, PCCOE Pune | [@aniket-gawande](https://github.com/aniket-gawande) |
+| **Ayush Chandwadkar** | B.Tech — Information Technology, PCCOE Pune | [@AyushChandwadkar](https://github.com/AyushChandwadkar) |
+
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for complete details.
 
 ---
 
-<p align="center">
-  <strong>ReliefOps</strong><br/>
-  Limited Capacity. Maximum Impact.
-</p>
-<p align="center">
-  <strong>Thank You ❤️</strong>
-</p>
-# 3D Decision Lab
+<div align="center">
 
-After optimizing a mission, open **3D Decision Lab** in the algorithm explorer.
-The existing playback bar controls both the warehouse and search tree. Selecting
-a revealed tree node previews its kit without changing historical incumbent data.
-Created branches are hypothetical previews; only actual incumbent events update
-the best-so-far truck. Best-first jumps reconcile the selected supply sets.
+### 🛡️ ReliefOps
+**Limited Capacity. Maximum Impact.**
 
-Switch to 2D for a canvas-free historical warehouse. Supply buttons offer keyboard
-selection and item details. Orbit controls are optional, with a reset camera and
-decision spotlight. A final illustrative dispatch is available only at a completed,
-proven optimal event. The results dashboard retains the separate final packing and
-greedy comparison views.
+*Thank you for exploring ReliefOps!*
 
-All scene geometry is procedural; no models, fonts, or other assets are downloaded.
-Three.js/Fiber/Drei load only when the 3D lab is opened. Rendering uses a demand
-loop, capped pixel ratio, one shadow light, and at most twelve trial/staging crates
-and eight best-kit crates. Additional supplies remain in the HTML inventory and
-kit descriptions. Cargo lifts, transfers, and settles using the shared playback
-speed; manual steps also animate. Pausing freezes movement, large timeline seeks
-restore the selected configuration immediately, and reduced motion skips
-interpolation. Retargeting always starts at the current position and never queues
-obsolete moves. Truck dispatch rotates its wheels according to distance traveled.
-Detailed procedural vehicles, supply containers, warehouse shelving, and tents
-use a responsive camera and numbered labels with an HTML identity strip. The
-warehouse transport operates the existing shared clock. Context loss and render errors fall back
-to the historical 2D warehouse.
-
-The scene model and tests live in `src/features/simulation3d`. The solver and worker
-protocol are unchanged. Crate dimensions are illustrative: the model optimizes
-configured priority subject to weight capacity, not geometric packing or routes.
-# Firebase authentication
-
-Email/password sign-in, account creation, email verification, password reset,
-Google sign-in, Google account linking, and sign-out use Firebase Authentication.
-Password accounts must verify their email before accessing saved missions.
-Firebase resolves the restored session before access is granted. The default
-session lasts for the browser session; “Keep me signed in” enables persistent
-Firebase-managed sign-in. Passwords are never stored by application code.
-
-Setup:
-
-1. Create a Firebase project and register a Web app in Project settings.
-2. Copy `.env.example` to `.env.local`. Set `VITE_FIREBASE_API_KEY`,
-   `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, and
-   `VITE_FIREBASE_APP_ID` from the Web app configuration. These are public client
-   configuration values. Never add an Admin service-account key to a Vite variable.
-3. In Authentication > Sign-in method, enable Email/Password and Google.
-   Google setup requires selecting a project support email.
-4. In Authentication > Settings > Authorized domains, add the domains you use:
-   `localhost`, `127.0.0.1` if used, and your production hostname. New Firebase
-   projects may not include localhost automatically. Use hostnames, not full URLs.
-5. Configure a password policy (at least 8 characters; a stronger project policy
-   is supported through Firebase's `validatePassword`) and enable email enumeration
-   protection. Check verification/password-reset email templates and sender settings.
-6. Restart Vite after changing `.env.local`. Add the same values to your hosting
-   build environment when you separately choose to deploy.
-
-Optimization, results, lessons, presentation mode and the 3D Decision Lab remain
-public. **My missions** is the only protected area. A verified account can save
-the current mission, load a saved mission into the editor, and delete one after
-confirmation. Saving creates a new snapshot; it does not silently overwrite an
-earlier mission. The library shows up to 100 recent records. Changing accounts
-clears the private library and removes its listener. Public demo playback remains
-usable. Loading a saved mission uses the editor's existing invalidation and undo.
-An unconfigured project does not create a fake session or grant library access.
-
-In the Firebase Console, create the default Cloud Firestore database in production
-mode and publish **firestore.rules** in the Rules tab before using the library.
-Alternatively, after authenticating the Firebase CLI, run
-`firebase deploy --only firestore:rules --project reliefops-272c2` when you choose
-to deploy rules. No rules or application deployment is performed automatically.
-Documents are stored under `users/{uid}/missions/{missionId}`. Rules enforce
-verified authentication and ownership on reads, creates, updates, and deletes;
-other paths are denied. Server timestamps are required and creation time cannot
-be overwritten. Mission inputs are validated on save and again on load. Invalid
-stored supply entries are never passed to the optimizer.
-
-Authorization is enforced by Firestore rules, beyond the UI gate. No Admin SDK
-credentials belong in the client. A future private API must verify Firebase ID
-tokens server-side. Administrative roles, if added later, must be assigned through
-trusted Admin SDK custom claims, never a client-selected role.
-
-Tests cover denied/loading/unverified access, password validation, Firebase
-gateway calls, reset-error normalization, session refresh races, provider linking,
-and observer cleanup. Live provider sign-in requires your configured Firebase
-project and has not been validated without it. Firebase docs:
-https://firebase.google.com/docs/auth/web/password-auth
-https://firebase.google.com/docs/auth/web/google-signin
-https://firebase.google.com/docs/auth/admin/custom-claims
+</div>
